@@ -66,15 +66,20 @@ const createFigureInModal = function(figure,sectionGalleryModal) {
         if (confirm("Voulez-vous supprimer cette photo ?") == true) {
             let token=window.localStorage.getItem("token");
             findByAttributeValue("work-id", idWork, "figure").forEach(async(fig) => {
-                const reponse = await fetch('http://localhost:5678/api/works/'+idWork,{
-                    method: "DELETE",
-                    headers: {
-                        Authorization:"Bearer "+token
-                    }
-                });
-                if(reponse.ok){
-                    fig.remove();
-                }else{alert("Erreur");}
+                try{
+                    const reponse = await fetch('http://localhost:5678/api/works/'+idWork,{
+                        method: "DELETE",
+                        headers: {
+                            Authorization:"Bearer "+token
+                        }
+                    });
+                    if(reponse.ok){
+                        fig.remove();
+                    }else{alert("Erreur");}
+                }catch(err){
+                    alert(err);
+                    return;
+                }
             });
         }
     });
@@ -121,9 +126,13 @@ function findByAttributeValue(attribute, value, element_type){
 
 //récupérer les categories depuis l'API au format JSON
 async function getCategories(){
-    const reponse = await fetch('http://localhost:5678/api/categories');
-    const categ = await reponse.json();
-    return categ;
+    try{
+        const reponse = await fetch('http://localhost:5678/api/categories');
+        const categ = await reponse.json();
+        return categ;
+    }catch(err){
+        alert(err);
+    }
 }
 
 
@@ -222,26 +231,32 @@ async function uploadImg(e) {
     fd.append("category", document.querySelector("#categorie").value);
     
     let token=window.localStorage.getItem("token");
-    let response = await fetch("http://localhost:5678/api/works", {
-        method: 'POST',
-        headers: {
-            Authorization:"Bearer "+token
-        },
-        body: fd
-    });
     //recuperer le titre avant la reset du formulaire
     const titre=document.getElementById("titre-img").value;
-    
-    const result = await response.json(); 
-    if(response.ok){
-        alert("Ajout avec succès!")
-        document.querySelector("#div-ajout-img1").style.display="none";
-        document.querySelector("#div-ajout-img2").style.display="flex";
-        document.getElementById("form-modal-ajout").reset();
-        bt.disabled = true;bt.style.backgroundColor="#a7a7a7";
-    }
-    else{
-        alert("Ajout non réussit!");
+    let result;
+    try{
+        let response = await fetch("http://localhost:5678/api/works", {
+            method: 'POST',
+            headers: {
+                Authorization:"Bearer "+token
+            },
+            body: fd
+        });
+       
+        result = await response.json(); 
+        if(response.ok){
+            alert("Ajout avec succès!")
+            document.querySelector("#div-ajout-img1").style.display="none";
+            document.querySelector("#div-ajout-img2").style.display="flex";
+            document.getElementById("form-modal-ajout").reset();
+            bt.disabled = true;bt.style.backgroundColor="#a7a7a7";
+        }
+        else{
+            alert("Ajout non réussit!");
+            return;
+        }
+    }catch(err){
+        alert(err);
         return;
     }
     

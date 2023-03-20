@@ -1,38 +1,54 @@
+//cet variable controle l'accés à l'API
+let acessAPI=true;
 //récupérer les categories depuis l'API au format JSON
 async function getCategories(){
-    const reponse = await fetch('http://localhost:5678/api/categories');
-    const categ = await reponse.json();
-    return categ;
+    try{
+        const reponse = await fetch('http://localhost:5678/api/categories');
+        const categ = await reponse.json();
+        const ulIcons = document.querySelector(".ul-icons");
+        categ.forEach(c => {
+            const li = document.createElement("li");
+            li.setAttribute("class", "li-icons");
+            const a = document.createElement("a");
+            a.setAttribute("href", "#"+c.id);
+            a.setAttribute("class", "a-filtre");
+            let esp="";
+            if(c.name.length > 19)esp="";
+            else if(c.name.length > 11)esp="&nbsp;";
+            else if(c.name.length > 5)esp="&ensp;";
+            else esp = "&emsp;";
+            a.innerHTML = esp+c.name+esp;
+            li.appendChild(a);
+            ulIcons.appendChild(li);
+            acessAPI=true;
+        });
+    }catch(err){
+        acessAPI=false;
+        alert("Impossible d'accéder à l'API pour récupérer les travaux.");
+    }
 }
 
-const categ = await getCategories();
-const ulIcons = document.querySelector(".ul-icons");
-categ.forEach(c => {
-    const li = document.createElement("li");
-    li.setAttribute("class", "li-icons");
-    const a = document.createElement("a");
-    a.setAttribute("href", "#"+c.id);
-    a.setAttribute("class", "a-filtre");
-    let esp="";
-    if(c.name.length > 19)esp="";
-    else if(c.name.length > 11)esp="&nbsp;";
-    else if(c.name.length > 5)esp="&ensp;";
-    else esp = "&emsp;";
-    a.innerHTML = esp+c.name+esp;
-    li.appendChild(a);
-    ulIcons.appendChild(li);
-});
+await getCategories();
 
 //récupérer les travaux depuis l'API au format JSON
 async function getWorks(){
-    // Récupération des travaux depuis l'API
-   const reponse = await fetch('http://localhost:5678/api/works');
-   const travaux = await reponse.json();
-   return travaux;
+    //si on a pas acces à l'API, on ne pourra pas remplir la gallerie
+    if(!acessAPI)return;
+    try{
+        // Récupération des travaux depuis l'API
+        const reponse = await fetch('http://localhost:5678/api/works');
+        const travaux = await reponse.json();
+        return travaux;
+    }catch(err){
+        acessAPI=false;
+        alert(err);
+    }
 }
 
 //Afficher tous les travaux dans la sectionGallery
 async function fillGallery(travaux,sectionGallery){
+    //si on a pas acces à l'API, on ne pourra pas remplir la gallerie
+    if(!acessAPI)return;
     sectionGallery.innerHTML = "";
     for (let i = 0; i < travaux.length; i++) {
         let response = await fetch(travaux[i].imageUrl)
@@ -67,9 +83,10 @@ if(token!==null){
     document.querySelector("#nav-filtres").setAttribute("style","display:none");
     document.querySelector("#li-logout").setAttribute("style","display:block");
     document.querySelector("#li-login").setAttribute("style","display:none");
-    document.querySelectorAll(".a-modifier").forEach(a => {
-        a.style.display="block";
-    });
+    if(acessAPI)
+        document.querySelectorAll(".a-modifier").forEach(a => {
+            a.style.display="block";
+        });
 }
 document.querySelector("#li-logout").addEventListener("click",function(){
     token=null;
