@@ -231,8 +231,9 @@ async function uploadImg(e) {
     fd.append("category", document.querySelector("#categorie").value);
     
     let token=window.localStorage.getItem("token");
-    //recuperer le titre avant la reset du formulaire
+    //recuperer le titre et la categorie avant la reset du formulaire
     const titre=document.getElementById("titre-img").value;
+    const categorie=document.getElementById("categorie").value;
     let result;
     try{
         let response = await fetch("http://localhost:5678/api/works", {
@@ -260,7 +261,6 @@ async function uploadImg(e) {
         return;
     }
     
-    const categorie=document.getElementById("categorie").value;
     const imageElement = document.createElement("img");
     imageElement.src = document.querySelector("#image-loader").src;
     imageElement.alt = titre;
